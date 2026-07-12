@@ -80,14 +80,19 @@ foreach (var modName in Enumerable.Reverse(priority))
 
         foreach (var spr in subSet.Sprites)
         {
-            // Nombre único global: si dos mods reusan el mismo SPR_SEL_PVTMB_XXX,
-            // esto evita que se pisen dentro de nuestro set combinado.
-            spr.Name = $"{spr.Name}_{Sanitize(modName)}";
-
             if (indexMap.TryGetValue((int)spr.TextureIndex, out int mappedIndex))
                 spr.TextureIndex = (uint)mappedIndex;
 
-            merged.Sprites.Add(spr);
+            // Si dos mods tienen un sprite con el MISMO nombre (mismo PV), gana el de
+            // mayor prioridad (se procesa último, así que reemplaza). No renombramos:
+            // el juego busca los sprites por su nombre exacto de siempre.
+            int existingIndex = merged.Sprites.FindIndex(s => s.Name == spr.Name);
+
+            if (existingIndex >= 0)
+                merged.Sprites[existingIndex] = spr;
+            else
+                merged.Sprites.Add(spr);
+
             mergedCount++;
         }
     }
@@ -97,10 +102,19 @@ foreach (var modName in Enumerable.Reverse(priority))
     }
 }
 
-string outputSprPath = Path.Combine(outputFolder, "spr_sel_pvtmb.spr");
-merged.Save(outputSprPath);
+string outputFarcPath = Path.Combine(outputFolder, "spr_sel_pvtmb.farc");
 
-Console.WriteLine($"Listo. {mergedCount} sprites combinados de {priority.Count} mods -> {outputSprPath}");
+using (var mergedStream = new MemoryStream())
+{
+    merged.Save(mergedStream);
+    mergedStream.Position = 0;
+
+    var outFarc = new FarcArchive { IsCompressed = true };
+    outFarc.Add("spr_sel_pvtmb.bin", mergedStream, true);
+    outFarc.Save(outputFarcPath);
+}
+
+Console.WriteLine($"Listo. {mergedCount} sprites combinados de {priority.Count} mods -> {outputFarcPath}");
 Console.WriteLine("Ahora corré auto_creat_mod_spr_db.py sobre la carpeta de salida para generar mod_spr_db.bin.");
 
 return 0;
@@ -166,6 +180,3 @@ static bool IsModEnabled(string modFolder)
 
     return true; // No se encontró el campo, asumimos activo.
 }
-
-static string Sanitize(string name) =>
-    string.Concat(name.Where(c => char.IsLetterOrDigit(c))).ToUpperInvariant();
