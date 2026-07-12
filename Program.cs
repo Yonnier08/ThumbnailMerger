@@ -104,3 +104,5 @@ File.Delete(tempSprPath);
 
 Console.WriteLine($"Listo. {mergedCount} sprites combinados de {farcFiles.Count} archivos -> {outputFarcPath}");
 Console.WriteLine("Ahora corré auto_creat_mod_spr_db.py sobre esta carpeta para generar mod_spr_db.bin.");
+
+return 0;
