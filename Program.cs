@@ -48,6 +48,14 @@ foreach (var modName in Enumerable.Reverse(priority))
         string? sprEntryName = farc.FileNames.FirstOrDefault(
             n => n.EndsWith(".spr", StringComparison.OrdinalIgnoreCase));
 
+        // Esta versión del juego guarda el sprite set adentro con extensión .bin en vez de .spr.
+        sprEntryName ??= farc.FileNames.FirstOrDefault(
+            n => n.EndsWith(".bin", StringComparison.OrdinalIgnoreCase));
+
+        // Último recurso: si el farc tiene un solo archivo adentro, es ese, sea cual sea su nombre.
+        if (sprEntryName == null && farc.FileNames.Count() == 1)
+            sprEntryName = farc.FileNames.First();
+
         if (sprEntryName == null)
         {
             Console.WriteLine($"  -> No se encontró .spr adentro de {farcPath}, se ignora.");
