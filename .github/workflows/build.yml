@@ -1,0 +1,40 @@
+name: Build ThumbnailMerger
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout ThumbnailMerger
+        uses: actions/checkout@v4
+        with:
+          path: ThumbnailMerger
+
+      - name: Checkout MikuMikuLibrary
+        uses: actions/checkout@v4
+        with:
+          repository: blueskythlikesclouds/MikuMikuLibrary
+          submodules: recursive
+          path: MikuMikuLibrary
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Publish self-contained
+        run: >
+          dotnet publish ThumbnailMerger/ThumbnailMerger.csproj
+          -c Release -r win-x64 --self-contained true
+          -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true
+          -o out
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ThumbnailMerger-win-x64
+          path: out/ThumbnailMerger.exe
