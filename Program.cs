@@ -103,16 +103,15 @@ foreach (var modName in Enumerable.Reverse(priority))
 }
 
 string outputFarcPath = Path.Combine(outputFolder, "spr_sel_pvtmb.farc");
+string tempSprPath = Path.Combine(outputFolder, "_temp_spr_sel_pvtmb.bin");
 
-using (var mergedStream = new MemoryStream())
-{
-    merged.Save(mergedStream);
-    mergedStream.Position = 0;
+merged.Save(tempSprPath);
 
-    var outFarc = new FarcArchive { IsCompressed = true };
-    outFarc.Add("spr_sel_pvtmb.bin", mergedStream, true);
-    outFarc.Save(outputFarcPath);
-}
+var outFarc = new FarcArchive { IsCompressed = true };
+outFarc.Add("spr_sel_pvtmb.bin", tempSprPath);
+outFarc.Save(outputFarcPath);
+
+File.Delete(tempSprPath);
 
 Console.WriteLine($"Listo. {mergedCount} sprites combinados de {priority.Count} mods -> {outputFarcPath}");
 Console.WriteLine("Ahora corré auto_creat_mod_spr_db.py sobre la carpeta de salida para generar mod_spr_db.bin.");
