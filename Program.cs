@@ -51,6 +51,7 @@ foreach (var modName in Enumerable.Reverse(priority))
         if (sprEntryName == null)
         {
             Console.WriteLine($"  -> No se encontró .spr adentro de {farcPath}, se ignora.");
+            Console.WriteLine($"  -> Archivos reales adentro del farc: {string.Join(", ", farc.FileNames)}");
             continue;
         }
 
@@ -97,7 +98,6 @@ Console.WriteLine("Ahora corré auto_creat_mod_spr_db.py sobre la carpeta de sal
 return 0;
 
 // Lee el array "priority" del config.toml (formato simple de strings entre comillas).
-// Ignora entradas que empiecen con "-" (asumidas deshabilitadas/comentadas).
 static List<string> ReadPriority(string configPath)
 {
     var result = new List<string>();
